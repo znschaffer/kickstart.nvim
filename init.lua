@@ -8,9 +8,6 @@ vim.g.have_nerd_font = true
 -- Make line numbers default
 vim.opt.number = true
 
-vim.opt.tabstop = 4
-vim.opt.expandtab = true
-vim.opt.shiftwidth = 4
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
@@ -45,7 +42,7 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 
 -- Sets how neovim will display certain whitespace in the editor.
-vim.opt.list = false
+vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
@@ -78,15 +75,6 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
-local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
-
-function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-  opts = opts or {}
-  opts.border = opts.border or 'single'
-  opts.max_width = opts.max_width or 50
-  return orig_util_open_floating_preview(contents, syntax, opts, ...)
-end
 
 -- [[ Basic Autocommands ]]
 
@@ -124,6 +112,7 @@ require('lazy').setup({
       },
     },
   },
+  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
@@ -211,7 +200,6 @@ require('lazy').setup({
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
-
       -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
       -- used for completion, annotations and signatures of Neovim apis
       { 'folke/neodev.nvim', opts = {} },
@@ -282,7 +270,26 @@ require('lazy').setup({
 
       -- Enable the following language servers
       local servers = {
-        clangd = {},
+        clangd = {
+          cmd = {
+            -- see clangd --help-hidden
+            'clangd',
+            '--background-index',
+            -- by default, clang-tidy use -checks=clang-diagnostic-*,clang-analyzer-*
+            -- to add more checks, create .clang-tidy file in the root directory
+            -- and add Checks key, see https://clang.llvm.org/extra/clang-tidy/
+            '--clang-tidy',
+            '--completion-style=bundled',
+            '--cross-file-rename',
+            '--header-insertion=iwyu',
+          },
+          init_options = {
+            clangdFileStatus = true, -- Provides information about activity on clangd’s per-file worker thread
+            usePlaceholders = true,
+            completeUnimported = true,
+            semanticHighlighting = true,
+          },
+        },
         gopls = {
           settings = {
             gopls = {
@@ -451,11 +458,10 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
-    'mcchrish/zenbones.nvim',
+    'miikanissi/modus-themes.nvim',
     priority = 1000, -- make sure to load this before all the other start plugins
     init = function()
-      vim.g.bones_compat = 1
-      vim.cmd.colorscheme 'zenwritten'
+      vim.cmd.colorscheme 'modus_operandi'
     end,
   },
 
@@ -494,11 +500,10 @@ require('lazy').setup({
     },
     config = function(_, opts)
       require('nvim-treesitter.configs').setup(opts)
-
     end,
   },
 
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   { import = 'custom.plugins' },
 }, {
