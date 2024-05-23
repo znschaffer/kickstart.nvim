@@ -20,8 +20,14 @@ vim.opt.clipboard = 'unnamedplus'
 -- Enable break indent
 vim.opt.breakindent = true
 
--- Save undo history
+local prefix = vim.env.XDG_CONFIG_HOME or vim.fn.expand '~/.config'
+
 vim.opt.undofile = true
+vim.opt.backup = true
+vim.opt.swapfile = true
+vim.opt.undodir = { prefix .. '/nvim/.undo//' }
+vim.opt.backupdir = { prefix .. '/nvim/.backup//' }
+vim.opt.directory = { prefix .. '/nvim/.swp//' }
 
 -- Enable colors
 vim.opt.termguicolors = true
@@ -363,6 +369,7 @@ require('lazy').setup({
         lua = { 'stylua' },
         python = { 'isort', 'black' },
         javascript = { { 'prettierd', 'prettier' } },
+        cpp = { 'clang-format' },
       },
     },
   },
@@ -458,10 +465,13 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
-    'miikanissi/modus-themes.nvim',
+    'navarasu/onedark.nvim',
     priority = 1000, -- make sure to load this before all the other start plugins
     init = function()
-      vim.cmd.colorscheme 'modus_operandi'
+      require('onedark').setup {
+        style = 'light',
+      }
+      vim.cmd.colorscheme 'onedark'
     end,
   },
 
